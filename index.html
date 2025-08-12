@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT 인프라 관리 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Tech Neutral (Tailwind's Slate and Teal) -->
+    <!-- Application Structure Plan: A single-page application with a fixed sidebar navigation for seamless scrolling between sections. This structure transforms the linear document into an exploratory dashboard, allowing users to jump to specific topics of interest. Key sections like 'Infrastructure Management' use interactive tabs to separate theory from practical examples (like monitoring vs. logging), preventing information overload. An interactive chart replaces the static text visualization, and a dedicated appendix with accordions organizes detailed code snippets for advanced users, ensuring the main content remains clean and focused. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Key Performance Indicators (CPU, Memory, etc.). Goal: Inform & Engage. Viz/Method: Interactive Bar Chart. Interaction: Simulated real-time data updates. Justification: A dynamic chart is more engaging and representative of a real monitoring dashboard than static text. Library: Chart.js.
+        - Report Info: Step-by-step incident response process. Goal: Organize & Clarify. Viz/Method: Styled HTML/CSS Process Flow Diagram. Interaction: Hover effects on steps. Justification: Visually represents the process flow, making it easier to follow than a simple text list. Method: Tailwind CSS.
+        - Report Info: Various code snippets (YAML, PowerShell, etc.). Goal: Inform & Enable Practical Use. Viz/Method: Syntax-highlighted code blocks. Interaction: "Copy to Clipboard" button for each block. Justification: Improves readability and allows users to easily copy code for their own use. Method: JavaScript + HTML.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .code-block {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'D2Coding', 'Courier New', monospace;
+            font-size: 0.875rem;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #334155;
+            color: #94a3b8;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover { background-color: #475569; }
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s, color 0.2s;
+            color: #94a3b8;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #0f766e;
+            color: #ffffff;
+        }
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s, color 0.2s;
+            color: #475569;
+            font-weight: 500;
+        }
+        .tab-btn.active {
+            background-color: #ccfbf1;
+            color: #0f766e;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div class="flex">
+        <aside class="w-64 h-screen sticky top-0 bg-slate-900 p-4 hidden lg:block">
+            <h1 class="text-xl font-bold text-white mb-6">IT 인프라 가이드</h1>
+            <nav id="desktop-nav">
+                <a href="#overview" class="nav-link active">1. 개요</a>
+                <a href="#infra-mgmt" class="nav-link">2. 인프라 관리</a>
+                <a href="#device-mgmt" class="nav-link">3. 기기 관리</a>
+                <a href="#security-mgmt" class="nav-link">4. 보안 관리</a>
+                <a href="#documentation" class="nav-link">5. 문서화</a>
+                <a href="#appendix" class="nav-link">6. 첨부 자료</a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-10">
+            <section id="overview" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">개요: IT 인프라 관리 대시보드</h2>
+                <p class="text-slate-600 leading-relaxed">
+                    현대 기업 환경에서 IT 인프라는 비즈니스 연속성의 핵심입니다. 본 대시보드는 네트워크 및 서버 관리부터 보안 정책 수립까지, 체계적이고 실무 중심의 접근 방법을 제시합니다. 각 영역별 핵심 업무 프로세스와 주요 도구의 활용법을 대화형으로 탐색하며 이론적 지식을 실제 업무에 적용하는 방법을 학습할 수 있습니다.
+                </p>
+            </section>
+
+            <section id="infra-mgmt" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">2. 네트워크 및 서버 인프라 관리</h2>
+                <p class="text-slate-600 mb-6">
+                    안정적인 서비스 운영을 위한 시스템의 가용성, 성능, 안정성 유지가 핵심 목표입니다. 실시간 모니터링과 신속한 장애 대응이 중요합니다.
+                </p>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="mb-4 border-b border-slate-200">
+                        <button class="tab-btn active" data-tab="monitoring">모니터링</button>
+                        <button class="tab-btn" data-tab="logging">로그 분석</button>
+                    </div>
+                    <div id="monitoring" class="tab-content">
+                        <h3 class="text-xl font-semibold mb-4 text-teal-700">실시간 성능 모니터링</h3>
+                        <p class="text-slate-600 mb-6">Prometheus로 서버 메트릭을 수집하고 Grafana로 시각화하여 시스템 상태를 한눈에 파악합니다. 아래 차트는 서버의 주요 성능 지표를 실시간으로 보여주는 예시입니다.</p>
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="logging" class="tab-content hidden">
+                        <h3 class="text-xl font-semibold mb-4 text-teal-700">ELK 스택을 이용한 로그 분석</h3>
+                        <p class="text-slate-600 mb-4">ELK(Elasticsearch, Logstash, Kibana) 스택은 대규모 로그 데이터를 수집, 분석, 시각화하는 데 효과적입니다. Logstash를 사용하여 다양한 소스의 로그를 정형화하고 Elasticsearch로 전송합니다.</p>
+                        <div class="code-block">
+                            <button class="copy-btn">Copy</button>
+                            <pre><code># logstash.conf
+input {
+  file {
+    path => "/var/log/nginx/access.log"
+    start_position => "beginning"
+  }
+}
+filter {
+  grok {
+    match => { "message" => "%{COMBINEDAPACHELOG}" }
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]
+    index => "nginx-access-%{+YYYY.MM.dd}"
+  }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="device-mgmt" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">3. 사내 직원 기기 관리</h2>
+                 <p class="text-slate-600 mb-6">
+                    직원의 업무 생산성을 유지하고 기업 보안 정책을 준수하기 위해 PC, 노트북 등 사내 기기를 효율적으로 관리합니다. 자산 관리, 보안 패치, 사용자 지원이 핵심입니다.
+                </p>
+                 <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="mb-4 border-b border-slate-200">
+                        <button class="tab-btn active" data-tab="sccm">Windows (SCCM)</button>
+                        <button class="tab-btn" data-tab="jamf">macOS (JAMF)</button>
+                    </div>
+                    <div id="sccm" class="tab-content">
+                        <h3 class="text-xl font-semibold mb-4 text-teal-700">SCCM을 활용한 Windows 관리</h3>
+                        <p class="text-slate-600 mb-4">SCCM은 대규모 Windows 환경에서 소프트웨어 배포, 업데이트 관리, 자산 추적 등을 자동화하는 통합 관리 솔루션입니다. 아래는 PowerShell을 이용한 패키지 배포 자동화 스크립트입니다.</p>
+                        <div class="code-block">
+                            <button class="copy-btn">Copy</button>
+                            <pre><code># SCCM 패키지 배포 자동화 스크립트
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$PackageName,
+
+  [Parameter(Mandatory=$true)]
+  [string]$CollectionName
+)
+# SCCM 모듈 로드 및 사이트 연결
+Import-Module ConfigurationManager
+Set-Location "ABC:" # Site Code
+
+# 배포 생성
+New-CMPackageDeployment -PackageName $PackageName `
+    -CollectionName $CollectionName `
+    -DeployAction Install `
+    -DeployPurpose Required
+                            </code></pre>
+                        </div>
+                    </div>
+                    <div id="jamf" class="tab-content hidden">
+                        <h3 class="text-xl font-semibold mb-4 text-teal-700">JAMF를 통한 macOS 관리</h3>
+                        <p class="text-slate-600 mb-4">JAMF는 Apple 기기 전용 관리 솔루션으로, Configuration Profile을 통해 보안 설정, Wi-Fi, VPN 등을 중앙에서 관리하고 배포할 수 있습니다.</p>
+                        <div class="code-block">
+                            <button class="copy-btn">Copy</button>
+                            <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+  &lt;key&gt;PayloadContent&lt;/key&gt;
+  &lt;array&gt;
+    &lt;dict&gt;
+      &lt;key&gt;PayloadType&lt;/key&gt;
+      &lt;string&gt;com.apple.security.firewall&lt;/string&gt;
+      &lt;key&gt;EnableFirewall&lt;/key&gt;
+      &lt;true/&gt;
+      &lt;key&gt;BlockAllIncoming&lt;/key&gt;
+      &lt;false/&gt;
+    &lt;/dict&gt;
+  &lt;/array&gt;
+  &lt;key&gt;PayloadDisplayName&lt;/key&gt;
+  &lt;string&gt;회사 방화벽 설정&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="security-mgmt" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">4. 보안 관리</h2>
+                <p class="text-slate-600 mb-6">
+                    기업의 정보 자산을 외부 위협으로부터 보호하기 위해 접근 통제, 보안 정책 시행, 취약점 관리 등 다층적인 방어 체계를 구축합니다.
+                </p>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4 text-teal-700">장애 대응 프로세스</h3>
+                    <p class="text-slate-600 mb-6">장애 발생 시 신속하고 체계적인 대응을 위한 프로세스입니다. 각 단계를 명확히 하여 피해를 최소화하고 빠르게 서비스를 복구합니다.</p>
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="flex-1 text-center p-4 bg-slate-100 rounded-lg">
+                            <div class="text-2xl mb-2">1️⃣</div>
+                            <h4 class="font-semibold">감지 및 초기 대응</h4>
+                            <p class="text-sm text-slate-500">시스템 상태 즉시 확인</p>
+                        </div>
+                        <div class="flex-1 text-center p-4 bg-slate-100 rounded-lg">
+                            <div class="text-2xl mb-2">2️⃣</div>
+                            <h4 class="font-semibold">원인 분석</h4>
+                            <p class="text-sm text-slate-500">로그 분석 및 영향 파악</p>
+                        </div>
+                        <div class="flex-1 text-center p-4 bg-slate-100 rounded-lg">
+                            <div class="text-2xl mb-2">3️⃣</div>
+                            <h4 class="font-semibold">복구 작업</h4>
+                            <p class="text-sm text-slate-500">우선순위에 따른 복구</p>
+                        </div>
+                        <div class="flex-1 text-center p-4 bg-slate-100 rounded-lg">
+                            <div class="text-2xl mb-2">4️⃣</div>
+                            <h4 class="font-semibold">사후 조치</h4>
+                            <p class="text-sm text-slate-500">문서화 및 재발 방지</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="documentation" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">5. 문서화 및 커뮤니케이션</h2>
+                <p class="text-slate-600 mb-6">
+                    체계적인 문서화는 장애 발생 시 신속한 대응을 가능하게 하고, 지식 공유를 통해 팀의 역량을 강화합니다. 모든 조치 사항을 기록하고 공유하는 것이 중요합니다.
+                </p>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4 text-teal-700">장애 대응 보고서 양식</h3>
+                    <p class="text-slate-600 mb-4">장애 발생 후에는 반드시 아래와 같은 양식으로 보고서를 작성하여 원인, 조치 내용, 재발 방지 대책을 명확히 기록해야 합니다.</p>
+                    <div class="code-block bg-slate-800">
+                        <button class="copy-btn">Copy</button>
+                        <pre><code>## 장애 대응 보고서
+------------------------------------------------------
+* 제목: [시스템명] 장애 발생 및 조치 보고서
+* 작성자/일시: 홍길동 / 2023-10-27 14:30
+* 장애 발생 정보
+    * 발생 시간: 2023-10-27 10:00
+    * 복구 시간: 2023-10-27 11:30
+    * 영향 범위: 웹 서비스 전체 중단
+* 장애 원인
+    * DB 서버 과부하로 인한 연결 풀 고갈
+* 조치 내용
+    * 1. DB 서버 재시작
+    * 2. 서버 자원(CPU, 메모리) 증설
+* 재발 방지 대책
+    * 1. DB 연결 풀 모니터링 시스템 구축
+    * 2. 부하 테스트를 통한 임계치 확인 및 알람 설정
+------------------------------------------------------</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="appendix">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">6. 첨부 자료: 실무 적용 예시</h2>
+                <p class="text-slate-600 mb-6">
+                    본 가이드의 내용을 더 깊이 있게 이해하고 실제 환경에 적용하는 데 도움을 드리고자, 다양한 설정 파일 및 스크립트 전문을 첨부합니다. 각 항목을 클릭하여 내용을 확인하세요.
+                </p>
+                <div class="space-y-2">
+                    <details class="bg-white shadow-sm rounded-lg p-4 cursor-pointer">
+                        <summary class="font-semibold text-lg">Prometheus 설정 파일 전체 (prometheus.yml)</summary>
+                        <div class="mt-4 code-block">
+                            <button class="copy-btn">Copy</button>
+                            <pre><code>global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: ['localhost:9093']
+rule_files:
+  - "/etc/prometheus/alert_rules.yml"
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['localhost:9090']
+  - job_name: 'node_exporter'
+    static_configs:
+    - targets: ['server01:9100', 'server02:9100']</code></pre>
+                        </div>
+                    </details>
+                    <details class="bg-white shadow-sm rounded-lg p-4 cursor-pointer">
+                        <summary class="font-semibold text-lg">Cisco CLI 방화벽 설정 전문</summary>
+                        <div class="mt-4 code-block">
+                            <button class="copy-btn">Copy</button>
+                            <pre><code>! --- 구성 모드 진입 ---
+enable
+configure terminal
+! --- ACL 설정 (192.168.1.100 IP 접근 거부) ---
+access-list 101 deny ip host 192.168.1.100 any
+! --- 나머지 모든 트래픽 허용 ---
+access-list 101 permit ip any any
+! --- 인터페이스에 ACL 적용 ---
+interface GigabitEthernet0/1
+ip access-group 101 in
+! --- 변경사항 저장 ---
+write memory</code></pre>
+                        </div>
+                    </details>
+                     <details class="bg-white shadow-sm rounded-lg p-4 cursor-pointer">
+                        <summary class="font-semibold text-lg">장애 대응 진단 스크립트 (diagnostics.sh)</summary>
+                        <div class="mt-4 code-block">
+                            <button class="copy-btn">Copy</button>
+                            <pre><code>#!/bin/bash
+# 긴급 상황 발생 시 시스템 상태를 빠르게 진단하는 스크립트
+echo "=== 긴급 시스템 점검 스크립트 ==="
+echo "실행 시간: $(date)"
+echo ""
+echo "[시스템 리소스]"
+top -bn1 | head -15
+echo ""
+echo "[디스크 사용률]"
+df -h
+echo ""
+echo "[주요 서비스 상태]"
+systemctl status nginx mysql php-fpm | grep "Active:"</code></pre>
+                        </div>
+                    </details>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chartCtx = document.getElementById('performanceChart').getContext('2d');
+            const performanceChart = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU 사용률', '메모리 사용률', '디스크 I/O', '네트워크 트래픽 (Mbps)'],
+                    datasets: [{
+                        label: '서버 성능',
+                        data: [78, 65, 32, 150],
+                        backgroundColor: [
+                            'rgba(13, 148, 136, 0.6)',
+                            'rgba(8, 126, 126, 0.6)',
+                            'rgba(15, 118, 110, 0.6)',
+                            'rgba(17, 94, 89, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(13, 148, 136, 1)',
+                            'rgba(8, 126, 126, 1)',
+                            'rgba(15, 118, 110, 1)',
+                            'rgba(17, 94, 89, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 200
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            setInterval(() => {
+                performanceChart.data.datasets[0].data = [
+                    Math.floor(Math.random() * 100),
+                    Math.floor(Math.random() * 100),
+                    Math.floor(Math.random() * 100),
+                    Math.floor(Math.random() * 200)
+                ];
+                performanceChart.update();
+            }, 3000);
+
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+                    const parent = button.closest('.bg-white');
+                    parent.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    parent.querySelectorAll('.tab-content').forEach(content => {
+                        if (content.id === tabId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const pre = button.nextElementSibling;
+                    const code = pre.innerText;
+                    const textArea = document.createElement('textarea');
+                    textArea.value = code;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        button.innerText = 'Copied!';
+                        setTimeout(() => {
+                            button.innerText = 'Copy';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                    }
+                    document.body.removeChild(textArea);
+                });
+            });
+            
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('#desktop-nav a');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
